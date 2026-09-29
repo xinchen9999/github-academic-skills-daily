@@ -1,0 +1,44 @@
+name: Daily academic skill recommendations
+
+on:
+  schedule:
+    - cron: "5 8 * * *"
+      timezone: "Asia/Shanghai"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-academic-skill-recommendations
+  cancel-in-progress: false
+
+jobs:
+  recommend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate today's top 10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python recommend.py
+
+      - name: Commit updated recommendations
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add latest.md reports/
+          if git diff --cached --quiet; then
+            echo "No recommendation changes to commit."
+          else
+            git commit -m "Update daily academic skill recommendations"
+            git push
+          fi
+
