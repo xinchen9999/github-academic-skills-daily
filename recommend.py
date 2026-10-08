@@ -9,7 +9,7 @@ import os
 import re
 import sys
 import time
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -114,9 +114,8 @@ def discover(token: str | None) -> list[dict[str, Any]]:
                 )
             )
             searchable_text = " ".join((name_and_description, " ".join(repo.get("topics") or [])))
-            # The query has already found academic/research + skills language
-            # in the repository README. This metadata check filters obvious
-            # collisions such as human study-skills repositories.
+            # The README query discovers candidates; metadata checks keep the
+            # daily snapshots focused on academic skills for AI agents.
             if (
                 not ACADEMIC_RE.search(searchable_text)
                 or not SKILL_RE.search(name_and_description)
@@ -135,10 +134,120 @@ def discover(token: str | None) -> list[dict[str, Any]]:
     return sorted(
         repositories.values(),
         key=lambda repo: (-repo.get("stargazers_count", 0), repo["full_name"].casefold()),
-    )[:TOP_N]
+    )
 
 
-def render_report(repositories: list[dict[str, Any]], report_date: str) -> str:
+def update_star_snapshots(
+    snapshot_path: Path,
+    repositories: list[dict[str, Any]],
+    report_date: str,
+) -> tuple[list[dict[str, Any]], str, str | None, str]:
+    current_date = date.fromisoformat(report_date)
+    previous_date = (current_date - timedelta(days=1)).isoformat()
+    current_captured_at = datetime.now(TIMEZONE).isoformat(timespec="seconds")
+
+    if snapshot_path.exists():
+        try:
+            saved = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise RuntimeError(f"Could not read star snapshot data: {error}") from error
+        if not isinstance(saved, dict) or not isinstance(saved.get("snapshots", {}), dict):
+            raise RuntimeError("Star snapshot data has an unsupported format.")
+        snapshots = saved.get("snapshots", {})
+    else:
+        snapshots = {}
+
+    previous = snapshots.get(previous_date)
+    previous_repositories = previous.get("repositories", {}) if isinstance(previous, dict) else {}
+    growth: list[dict[str, Any]] = []
+
+    if previous_repositories:
+        for repo in repositories:
+            full_name = repo["full_name"]
+            old_stars = previous_repositories.get(full_name)
+            if old_stars is None:
+                continue
+            increase = repo.get("stargazers_count", 0) - old_stars
+            if increase > 0:
+                item = repo.copy()
+                item["daily_growth"] = increase
+                growth.append(item)
+
+    growth.sort(
+        key=lambda repo: (
+            -repo["daily_growth"],
+            -repo.get("stargazers_count", 0),
+            repo["full_name"].casefold(),
+        )
+    )
+
+    today = {
+        repo["full_name"]: repo.get("stargazers_count", 0)
+        for repo in repositories
+    }
+    snapshots[report_date] = {
+        "captured_at": current_captured_at,
+        "repositories": today,
+    }
+    keep_dates = {previous_date, report_date}
+    snapshots = {day: value for day, value in snapshots.items() if day in keep_dates}
+
+    snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = snapshot_path.with_suffix(snapshot_path.suffix + ".tmp")
+    temporary_path.write_text(
+        json.dumps({"snapshots": snapshots}, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    temporary_path.replace(snapshot_path)
+
+    return (
+        growth[:TOP_N],
+        previous_date,
+        previous.get("captured_at") if isinstance(previous, dict) else None,
+        current_captured_at,
+    )
+
+
+def render_repository_table(
+    repositories: list[dict[str, Any]],
+    star_column: str,
+    star_value_key: str,
+    include_current_stars: bool = False,
+) -> list[str]:
+    if include_current_stars:
+        lines = [
+            f"| 排名 | 仓库 | {star_column} | 当前总 Stars | 简介 |",
+            "|---:|---|---:|---:|---|",
+        ]
+    else:
+        lines = [
+            f"| 排名 | 仓库 | {star_column} | 简介 |",
+            "|---:|---|---:|---|",
+        ]
+
+    for rank, repo in enumerate(repositories[:TOP_N], start=1):
+        full_name = repo["full_name"]
+        url = repo.get("html_url") or f"https://github.com/{full_name}"
+        stars = repo.get(star_value_key, 0)
+        description = (repo.get("description") or "（仓库未提供简介）").replace("|", "\\|").replace("\n", " ").strip()
+        if include_current_stars:
+            lines.append(
+                f"| {rank} | [{full_name}]({url}) | {stars:,} | "
+                f"{repo.get('stargazers_count', 0):,} | {description} |"
+            )
+        else:
+            lines.append(f"| {rank} | [{full_name}]({url}) | {stars:,} | {description} |")
+    return lines
+
+
+def render_report(
+    repositories: list[dict[str, Any]],
+    growth: list[dict[str, Any]],
+    report_date: str,
+    previous_date: str,
+    previous_captured_at: str | None,
+    current_captured_at: str,
+) -> str:
     if not repositories:
         raise RuntimeError(
             "No repositories passed the relevance filter. The existing report was left unchanged."
@@ -147,26 +256,42 @@ def render_report(repositories: list[dict[str, Any]], report_date: str) -> str:
     lines = [
         f"# 科研学术 Agent Skills 每日推荐（{report_date}）",
         "",
-        "按 GitHub 总 Star 数从高到低排序。以下为公开、未归档且非 fork 的仓库。",
+        "以下榜单只包含公开、未归档且非 fork 的科研学术 Agent Skills 仓库。",
         "",
-        f"检索时间：{datetime.now(TIMEZONE).strftime('%Y-%m-%d %H:%M')}（Asia/Shanghai）  ",
-        f"检索范围：GitHub Repository Search，合并 {len(SEARCH_QUERIES)} 组关键词，去重后取前 {TOP_N}。",
+        f"检索时间：{current_captured_at}（Asia/Shanghai）  ",
+        f"检索范围：GitHub Repository Search，合并 {len(SEARCH_QUERIES)} 组关键词。",
         "",
-        "| 排名 | 仓库 | Stars | 简介 |",
-        "|---:|---|---:|---|",
+        "## 累计 Star 前十",
+        "",
+        "按当前累计 Star 数从高到低排序。",
     ]
+    lines.extend(render_repository_table(repositories, "总 Stars", "stargazers_count"))
+    lines.extend(["", "## 近一日新增 Star 前十", ""])
 
-    for rank, repo in enumerate(repositories, start=1):
-        full_name = repo["full_name"]
-        url = repo.get("html_url") or f"https://github.com/{full_name}"
-        stars = repo.get("stargazers_count", 0)
-        description = (repo.get("description") or "（仓库未提供简介）").replace("|", "\\|").replace("\n", " ").strip()
-        lines.append(f"| {rank} | [{full_name}]({url}) | {stars:,} | {description} |")
+    if previous_captured_at:
+        lines.append(
+            f"按 {previous_date} 与 {report_date} 两次快照的累计 Star 差值排序；比较时段约为 24 小时。"
+        )
+        if growth:
+            lines.extend(
+                render_repository_table(
+                    growth,
+                    "新增 Stars",
+                    "daily_growth",
+                    include_current_stars=True,
+                )
+            )
+        else:
+            lines.append("已追踪的仓库在两次快照之间暂无 Star 增长。")
+    else:
+        lines.append(
+            "正在建立第一份 Star 基线；从下一次每日运行开始，将对连续两天均检索到的仓库计算新增 Star。"
+        )
 
     lines.extend(
         [
             "",
-            "> 排名反映生成时的累计 Star 数；GitHub 定时任务可能因平台负载延迟。关键词和筛选规则见 [README](README.md)。",
+            "> 新发现的仓库需积累连续两天的数据后才进入升星榜。Star 数来自 GitHub 仓库搜索结果；关键词和筛选规则见 [README](README.md)。",
             "",
         ]
     )
@@ -175,7 +300,7 @@ def render_report(repositories: list[dict[str, Any]], report_date: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output-dir", default=".", help="Directory where latest.md and dated reports are written")
+    parser.add_argument("--output-dir", default=".", help="Directory where reports and snapshot data are written")
     parser.add_argument("--date", help="Report date in YYYY-MM-DD format; defaults to today's Shanghai date")
     args = parser.parse_args()
 
@@ -184,20 +309,35 @@ def main() -> int:
     try:
         datetime.strptime(report_date, "%Y-%m-%d")
         repositories = discover(os.environ.get("GITHUB_TOKEN"))
-        report = render_report(repositories, report_date)
+        if not repositories:
+            raise RuntimeError(
+                "No repositories passed the relevance filter. The existing report was left unchanged."
+            )
+        growth, previous_date, previous_captured_at, current_captured_at = update_star_snapshots(
+            output_dir / "data" / "star-snapshots.json",
+            repositories,
+            report_date,
+        )
+        report = render_report(
+            repositories,
+            growth,
+            report_date,
+            previous_date,
+            previous_captured_at,
+            current_captured_at,
+        )
         dated_report = output_dir / "reports" / f"{report_date}.md"
         latest_report = output_dir / "latest.md"
         dated_report.parent.mkdir(parents=True, exist_ok=True)
         dated_report.write_text(report, encoding="utf-8")
         latest_report.write_text(report, encoding="utf-8")
-    except (ValueError, RuntimeError) as error:
+    except (ValueError, RuntimeError, OSError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
 
-    print(f"Wrote {dated_report} and {latest_report}")
+    print(f"Wrote {dated_report}, {latest_report}, and the star snapshot")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
