@@ -1,6 +1,12 @@
 name: Daily academic skill recommendations
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - recommend.py
+      - .github/workflows/daily-recommendations.yml
   schedule:
     - cron: "5 8 * * *"
       timezone: "Asia/Shanghai"
@@ -25,20 +31,19 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Generate today's top 10
+      - name: Generate total-star and one-day-growth rankings
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python recommend.py
 
-      - name: Commit updated recommendations
+      - name: Commit reports and star snapshots
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add latest.md reports/
+          git add latest.md reports/ data/star-snapshots.json
           if git diff --cached --quiet; then
             echo "No recommendation changes to commit."
           else
             git commit -m "Update daily academic skill recommendations"
             git push
           fi
-
