@@ -1,0 +1,25 @@
+{
+  "snapshots": {
+    "2026-10-08": {
+      "captured_at": "2026-10-08T09:42:33+08:00",
+      "repositories": {
+        "Imbad0202/academic-research-skills": 50787,
+        "K-Dense-AI/scientific-agent-skills": 47915,
+        "wanshuiyin/Auto-claude-code-research-in-sleep": 17102,
+        "Orchestra-Research/AI-Research-SKILLs": 13334,
+        "Imbad0202/academic-research-skills-codex": 12252,
+        "aipoch/open-science": 5465,
+        "zLanqing/codex-claude-academic-skills": 4612,
+        "brycewang-stanford/Auto-Empirical-Research-Skills": 4524,
+        "openags/paper-search-mcp": 2760,
+        "HughYau/AcademicForge": 2589,
+        "AIScientists-Dev/academic-humanizer": 1835,
+        "LeonChaoX/qinyan-academic-skills": 938,
+        "Kiterlin/anti-defensive-writing": 838,
+        "modelscope/Awesome-Vibe-Research": 448,
+        "tizzy916/humanities-writing-companion": 433,
+        "franklee16/academic-research-skills": 223
+      }
+    }
+  }
+}
