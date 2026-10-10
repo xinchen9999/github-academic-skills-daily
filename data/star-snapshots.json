@@ -1,26 +1,5 @@
 {
   "snapshots": {
-    "2026-10-08": {
-      "captured_at": "2026-10-08T09:42:33+08:00",
-      "repositories": {
-        "Imbad0202/academic-research-skills": 50787,
-        "K-Dense-AI/scientific-agent-skills": 47915,
-        "wanshuiyin/Auto-claude-code-research-in-sleep": 17102,
-        "Orchestra-Research/AI-Research-SKILLs": 13334,
-        "Imbad0202/academic-research-skills-codex": 12252,
-        "aipoch/open-science": 5465,
-        "zLanqing/codex-claude-academic-skills": 4612,
-        "brycewang-stanford/Auto-Empirical-Research-Skills": 4524,
-        "openags/paper-search-mcp": 2760,
-        "HughYau/AcademicForge": 2589,
-        "AIScientists-Dev/academic-humanizer": 1835,
-        "LeonChaoX/qinyan-academic-skills": 938,
-        "Kiterlin/anti-defensive-writing": 838,
-        "modelscope/Awesome-Vibe-Research": 448,
-        "tizzy916/humanities-writing-companion": 433,
-        "franklee16/academic-research-skills": 223
-      }
-    },
     "2026-10-09": {
       "captured_at": "2026-10-09T08:31:54+08:00",
       "repositories": {
@@ -39,6 +18,27 @@
         "Kiterlin/anti-defensive-writing": 851,
         "modelscope/Awesome-Vibe-Research": 449,
         "tizzy916/humanities-writing-companion": 434,
+        "franklee16/academic-research-skills": 223
+      }
+    },
+    "2026-10-10": {
+      "captured_at": "2026-10-10T08:29:40+08:00",
+      "repositories": {
+        "Imbad0202/academic-research-skills": 51067,
+        "K-Dense-AI/scientific-agent-skills": 48165,
+        "wanshuiyin/Auto-claude-code-research-in-sleep": 17183,
+        "Orchestra-Research/AI-Research-SKILLs": 13392,
+        "Imbad0202/academic-research-skills-codex": 12422,
+        "aipoch/open-science": 5489,
+        "zLanqing/codex-claude-academic-skills": 4687,
+        "brycewang-stanford/Auto-Empirical-Research-Skills": 4550,
+        "openags/paper-search-mcp": 2773,
+        "HughYau/AcademicForge": 2590,
+        "AIScientists-Dev/academic-humanizer": 1922,
+        "LeonChaoX/qinyan-academic-skills": 944,
+        "Kiterlin/anti-defensive-writing": 869,
+        "modelscope/Awesome-Vibe-Research": 451,
+        "tizzy916/humanities-writing-companion": 436,
         "franklee16/academic-research-skills": 223
       }
     }
