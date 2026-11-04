@@ -1,28 +1,5 @@
 {
   "snapshots": {
-    "2026-11-02": {
-      "captured_at": "2026-11-02T13:47:01+08:00",
-      "repositories": {
-        "K-Dense-AI/scientific-agent-skills": 55711,
-        "Imbad0202/academic-research-skills": 54920,
-        "wanshuiyin/Auto-claude-code-research-in-sleep": 18459,
-        "Orchestra-Research/AI-Research-SKILLs": 14185,
-        "Imbad0202/academic-research-skills-codex": 13884,
-        "zLanqing/codex-claude-academic-skills": 5555,
-        "aipoch/open-science": 5418,
-        "brycewang-stanford/Auto-Empirical-Research-Skills": 4875,
-        "AIScientists-Dev/academic-humanizer": 3179,
-        "openags/paper-search-mcp": 2971,
-        "HughYau/AcademicForge": 2621,
-        "Kiterlin/anti-defensive-writing": 1598,
-        "LeonChaoX/qinyan-academic-skills": 1000,
-        "hanlulong/awesome-ai-for-economists": 701,
-        "tizzy916/humanities-writing-companion": 472,
-        "modelscope/Awesome-Vibe-Research": 468,
-        "franklee16/academic-research-skills": 230,
-        "O0000-code/paper-search-pro": 225
-      }
-    },
     "2026-11-03": {
       "captured_at": "2026-11-03T14:28:20+08:00",
       "repositories": {
@@ -43,6 +20,29 @@
         "tizzy916/humanities-writing-companion": 473,
         "modelscope/Awesome-Vibe-Research": 469,
         "franklee16/academic-research-skills": 232
+      }
+    },
+    "2026-11-04": {
+      "captured_at": "2026-11-04T14:00:12+08:00",
+      "repositories": {
+        "K-Dense-AI/scientific-agent-skills": 56010,
+        "Imbad0202/academic-research-skills": 55262,
+        "wanshuiyin/Auto-claude-code-research-in-sleep": 18590,
+        "Orchestra-Research/AI-Research-SKILLs": 14247,
+        "Imbad0202/academic-research-skills-codex": 13995,
+        "zLanqing/codex-claude-academic-skills": 5632,
+        "aipoch/open-science": 5436,
+        "brycewang-stanford/Auto-Empirical-Research-Skills": 4912,
+        "AIScientists-Dev/academic-humanizer": 3304,
+        "openags/paper-search-mcp": 2984,
+        "HughYau/AcademicForge": 2626,
+        "Kiterlin/anti-defensive-writing": 1669,
+        "LeonChaoX/qinyan-academic-skills": 1005,
+        "hanlulong/awesome-ai-for-economists": 703,
+        "tizzy916/humanities-writing-companion": 475,
+        "modelscope/Awesome-Vibe-Research": 469,
+        "franklee16/academic-research-skills": 232,
+        "O0000-code/paper-search-pro": 226
       }
     }
   }
